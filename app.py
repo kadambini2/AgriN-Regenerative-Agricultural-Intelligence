@@ -557,10 +557,8 @@ if page == "🏠 Dashboard":
 
     # AI
 
-    st.markdown(
-        '<div class="section">🤖 Today's Intelligence</div>',
-        unsafe_allow_html=True
-    )
+st.markdown('<div class="section">🤖 Today\'s Intelligence</div>', unsafe_allow_html=True)
+    
 
     left, right = st.columns([1.5, 1])
 
