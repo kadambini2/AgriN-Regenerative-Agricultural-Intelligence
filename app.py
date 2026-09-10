@@ -1,8 +1,6 @@
-
 import streamlit as st
 import pandas as pd
 import requests
-import plotly.graph_objects as go
 import plotly.express as px
 
 # =========================================================
@@ -227,7 +225,7 @@ header, footer, #MainMenu {
     color: #77837c;
 }
 
-/* STREAMLIT BUTTON */
+/* BUTTON */
 
 .stButton > button {
     border-radius: 12px;
@@ -322,7 +320,7 @@ if "farm" not in st.session_state:
     st.session_state.farm = {}
 
 # =========================================================
-# WEATHER FUNCTION
+# WEATHER
 # =========================================================
 
 @st.cache_data(ttl=1800)
@@ -336,8 +334,6 @@ def get_weather():
             "&longitude=76.8343"
             "&current=temperature_2m,relative_humidity_2m,"
             "precipitation,wind_speed_10m"
-            "&daily=temperature_2m_max,temperature_2m_min,"
-            "precipitation_sum"
             "&timezone=Asia%2FKolkata"
         )
 
@@ -346,18 +342,19 @@ def get_weather():
             timeout=10
         )
 
-        data = response.json()
+        response.raise_for_status()
 
+        data = response.json()
         current = data["current"]
 
         return {
-            "temperature": current["temperature_2m"],
-            "humidity": current["relative_humidity_2m"],
-            "rain": current["precipitation"],
-            "wind": current["wind_speed_10m"]
+            "temperature": current.get("temperature_2m", 28),
+            "humidity": current.get("relative_humidity_2m", 55),
+            "rain": current.get("precipitation", 0),
+            "wind": current.get("wind_speed_10m", 10)
         }
 
-    except:
+    except Exception:
 
         return {
             "temperature": 28,
@@ -476,7 +473,9 @@ if page == "🏠 Dashboard":
         unsafe_allow_html=True
     )
 
-    # METRICS
+    # -----------------------------------------------------
+    # FARM METRICS
+    # -----------------------------------------------------
 
     st.markdown(
         '<div class="section">Farm at a glance</div>',
@@ -515,7 +514,9 @@ if page == "🏠 Dashboard":
                 unsafe_allow_html=True
             )
 
+    # -----------------------------------------------------
     # WEATHER
+    # -----------------------------------------------------
 
     weather = get_weather()
 
@@ -556,7 +557,9 @@ if page == "🏠 Dashboard":
                 unsafe_allow_html=True
             )
 
-    # AI
+    # -----------------------------------------------------
+    # AI INTELLIGENCE
+    # -----------------------------------------------------
 
     st.markdown(
         '<div class="section">🤖 Today\'s Intelligence</div>',
@@ -567,56 +570,64 @@ if page == "🏠 Dashboard":
 
     with left:
 
-        st.markdown("""
-        <div class="ai-card">
+        st.markdown(
+            """
+            <div class="ai-card">
 
-        <h2>🤖 AI Farm Copilot</h2>
+            <h2>🤖 AI Farm Copilot</h2>
 
-        <p>
-        Your farm's next best regenerative actions.
-        </p>
+            <p>
+            Your farm's next best regenerative actions.
+            </p>
 
-        <br>
+            <br>
 
-        <b>🌱 Priority Action</b>
+            <b>🌱 Priority Action</b>
 
-        <p>
-        Check soil moisture before irrigation and
-        maintain soil cover to reduce evaporation.
-        </p>
+            <p>
+            Check soil moisture before irrigation and
+            maintain soil cover to reduce evaporation.
+            </p>
 
-        <b>♻️ Opportunity</b>
+            <b>♻️ Opportunity</b>
 
-        <p>
-        Crop residue can potentially be converted
-        into compost, mulch or other value pathways.
-        </p>
+            <p>
+            Crop residue can potentially be converted
+            into compost, mulch or other value pathways.
+            </p>
 
-        </div>
-        """, unsafe_allow_html=True)
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
     with right:
 
-        st.markdown("""
-        <div class="card">
+        st.markdown(
+            """
+            <div class="card">
 
-        <div class="big-score">
-        74
-        </div>
+            <div class="big-score">
+            74
+            </div>
 
-        <h3 style="text-align:center">
-        Regeneration Score
-        </h3>
+            <h3 style="text-align:center">
+            Regeneration Score
+            </h3>
 
-        <p class="score-label">
-        Your farm is moving toward
-        a more resilient system.
-        </p>
+            <p class="score-label">
+            Your farm is moving toward
+            a more resilient system.
+            </p>
 
-        </div>
-        """, unsafe_allow_html=True)
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
+    # -----------------------------------------------------
     # QUICK ACTIONS
+    # -----------------------------------------------------
 
     st.markdown(
         '<div class="section">⚡ Quick Actions</div>',
@@ -774,7 +785,7 @@ elif page == "👨‍🌾 My Farm":
         }
 
         st.success(
-            "✅ Farm profile saved!"
+            "✅ Farm profile saved successfully!"
         )
 
         st.balloons()
@@ -892,7 +903,7 @@ elif page == "🌾 Crop Intelligence":
 
     cols = st.columns(3)
 
-    for i, crop in enumerate(
+    for i, crop_name in enumerate(
         recommendations[soil]
     ):
 
@@ -902,7 +913,7 @@ elif page == "🌾 Crop Intelligence":
                 f"""
                 <div class="card">
 
-                <h3>🌾 {crop}</h3>
+                <h3>🌾 {crop_name}</h3>
 
                 <p>
                 Potential candidate based on
@@ -980,15 +991,23 @@ elif page == "🔄 Regenerative Planner":
             unsafe_allow_html=True
         )
 
-        for p in practices:
+        if practices:
 
-            st.markdown(
-                f"""
-                <div class="action">
-                ✓ {p}
-                </div>
-                """,
-                unsafe_allow_html=True
+            for practice in practices:
+
+                st.markdown(
+                    f"""
+                    <div class="action">
+                    ✓ {practice}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+        else:
+
+            st.info(
+                "Select practices to build your action plan."
             )
 
         st.markdown(
@@ -1006,8 +1025,6 @@ elif page == "💧 Water Intelligence":
         '<div class="section">💧 Water Intelligence</div>',
         unsafe_allow_html=True
     )
-
-    weather = get_weather()
 
     c1, c2 = st.columns(2)
 
@@ -1051,7 +1068,7 @@ elif page == "💧 Water Intelligence":
         unsafe_allow_html=True
     )
 
-    st.progress(score / 100)
+    st.progress(score)
 
     if moisture < 30:
 
@@ -1079,12 +1096,12 @@ elif page == "💧 Water Intelligence":
         "Use drought-tolerant crops when appropriate."
     ]
 
-    for r in recommendations:
+    for recommendation in recommendations:
 
         st.markdown(
             f"""
             <div class="action">
-            💧 {r}
+            💧 {recommendation}
             </div>
             """,
             unsafe_allow_html=True
@@ -1153,13 +1170,13 @@ elif page == "♻️ Waste-to-Value":
         ]
     }
 
-    for item in pathways[waste]:
+    for pathway in pathways[waste]:
 
         st.markdown(
             f"""
             <div class="card">
 
-            <h3>♻️ {item}</h3>
+            <h3>♻️ {pathway}</h3>
 
             <p>
             Potential pathway for converting agricultural
@@ -1218,7 +1235,7 @@ elif page == "🌳 Biodiversity":
         unsafe_allow_html=True
     )
 
-    st.progress(score / 100)
+    st.progress(score)
 
 # =========================================================
 # AI CROP DOCTOR
@@ -1249,29 +1266,32 @@ elif page == "📸 AI Crop Doctor":
             use_container_width=True
         ):
 
-            st.markdown("""
-            <div class="card">
+            st.markdown(
+                """
+                <div class="card">
 
-            <h3>🤖 Preliminary Crop Analysis</h3>
+                <h3>🤖 Preliminary Crop Analysis</h3>
 
-            <div class="action">
-            🌱 Possible leaf stress
-            </div>
+                <div class="action">
+                🌱 Possible leaf stress
+                </div>
 
-            <div class="action">
-            💧 Check water stress
-            </div>
+                <div class="action">
+                💧 Check water stress
+                </div>
 
-            <div class="action">
-            🧪 Check nutrient condition
-            </div>
+                <div class="action">
+                🧪 Check nutrient condition
+                </div>
 
-            <div class="action">
-            🐛 Inspect for pest/disease symptoms
-            </div>
+                <div class="action">
+                🐛 Inspect for pest/disease symptoms
+                </div>
 
-            </div>
-            """, unsafe_allow_html=True)
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
             st.warning(
                 "Prototype only. A trained computer-vision model "
@@ -1300,20 +1320,23 @@ elif page == "🧪 Soil Scanner":
         type=["jpg", "jpeg", "png", "pdf"]
     )
 
-    st.markdown("""
-    <div class="card">
+    st.markdown(
+        """
+        <div class="card">
 
-    <h3>🧪 What AgriN can analyse</h3>
+        <h3>🧪 What AgriN can analyse</h3>
 
-    <div class="action">pH</div>
-    <div class="action">Nitrogen</div>
-    <div class="action">Phosphorus</div>
-    <div class="action">Potassium</div>
-    <div class="action">Organic Carbon</div>
-    <div class="action">Electrical Conductivity</div>
+        <div class="action">pH</div>
+        <div class="action">Nitrogen</div>
+        <div class="action">Phosphorus</div>
+        <div class="action">Potassium</div>
+        <div class="action">Organic Carbon</div>
+        <div class="action">Electrical Conductivity</div>
 
-    </div>
-    """, unsafe_allow_html=True)
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     if uploaded:
 
@@ -1337,19 +1360,22 @@ elif page == "🏘️ Panchayat Intelligence":
         unsafe_allow_html=True
     )
 
-    st.markdown("""
-    <div class="card">
+    st.markdown(
+        """
+        <div class="card">
 
-    <h3>🌍 Community Regeneration Intelligence</h3>
+        <h3>🌍 Community Regeneration Intelligence</h3>
 
-    <p>
-    AgriN can aggregate anonymized farm indicators to help
-    Panchayats understand soil, water, biodiversity and
-    climate resilience.
-    </p>
+        <p>
+        AgriN can aggregate anonymized farm indicators to help
+        Panchayats understand soil, water, biodiversity and
+        climate resilience.
+        </p>
 
-    </div>
-    """, unsafe_allow_html=True)
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     taluk = st.selectbox(
         "🏘️ Select Taluk",
@@ -1379,11 +1405,13 @@ elif page == "🏘️ Panchayat Intelligence":
         "🌡️"
     ]
 
-    for col, (label, value), icon in zip(
+    for col, score_item, icon in zip(
         cols,
         scores.items(),
         icons
     ):
+
+        label, value = score_item
 
         with col:
 
@@ -1406,10 +1434,12 @@ elif page == "🏘️ Panchayat Intelligence":
                 unsafe_allow_html=True
             )
 
-    df = pd.DataFrame({
-        "Indicator": list(scores.keys()),
-        "Score": list(scores.values())
-    })
+    df = pd.DataFrame(
+        {
+            "Indicator": list(scores.keys()),
+            "Score": list(scores.values())
+        }
+    )
 
     fig = px.bar(
         df,
@@ -1430,7 +1460,7 @@ elif page == "🏘️ Panchayat Intelligence":
     )
 
 # =========================================================
-# CLIMATE
+# CLIMATE RESILIENCE
 # =========================================================
 
 elif page == "🌡️ Climate Resilience":
@@ -1492,23 +1522,23 @@ elif page == "🌡️ Climate Resilience":
         unsafe_allow_html=True
     )
 
-    st.progress(
-        resilience / 100
-    )
+    st.progress(resilience)
 
-    for item in [
+    climate_actions = [
         "Use drought-tolerant crops.",
         "Increase soil organic matter.",
         "Maintain soil cover.",
         "Improve rainwater harvesting.",
         "Diversify farm income.",
         "Consider agroforestry where suitable."
-    ]:
+    ]
+
+    for action in climate_actions:
 
         st.markdown(
             f"""
             <div class="action">
-            🛡️ {item}
+            🛡️ {action}
             </div>
             """,
             unsafe_allow_html=True
@@ -1562,7 +1592,8 @@ elif page == "💰 Regenerative ROI":
 
     improvement = (
         ((total - current) / current) * 100
-        if current else 0
+        if current
+        else 0
     )
 
     cols = st.columns(3)
@@ -1640,9 +1671,7 @@ elif page == "📅 30-Day Challenge":
         unsafe_allow_html=True
     )
 
-    st.progress(
-        completed / len(tasks)
-    )
+    st.progress(percentage)
 
     for i, task in enumerate(tasks, 1):
 
@@ -1795,22 +1824,24 @@ elif page == "📊 Impact Dashboard":
         unsafe_allow_html=True
     )
 
-    data = pd.DataFrame({
-        "Area": [
-            "Water",
-            "Soil",
-            "Biodiversity",
-            "Waste",
-            "Climate"
-        ],
-        "Score": [
-            72,
-            68,
-            61,
-            78,
-            70
-        ]
-    })
+    data = pd.DataFrame(
+        {
+            "Area": [
+                "Water",
+                "Soil",
+                "Biodiversity",
+                "Waste",
+                "Climate"
+            ],
+            "Score": [
+                72,
+                68,
+                61,
+                78,
+                70
+            ]
+        }
+    )
 
     fig = px.bar(
         data,
@@ -1834,16 +1865,19 @@ elif page == "📊 Impact Dashboard":
 # FOOTER
 # =========================================================
 
-st.markdown("""
-<div class="footer">
+st.markdown(
+    """
+    <div class="footer">
 
-🌱 <b>AgriN</b> — Regenerative Agricultural Intelligence
+    🌱 <b>AgriN</b> — Regenerative Agricultural Intelligence
 
-<br><br>
+    <br><br>
 
-Observe • Diagnose • Recommend • Act • Measure • Improve
+    Observe • Diagnose • Recommend • Act • Measure • Improve
 
-</div>
-""", unsafe_allow_html=True)
-```
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 
