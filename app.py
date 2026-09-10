@@ -1,3 +1,4 @@
+```python
 import streamlit as st
 import pandas as pd
 import requests
@@ -557,8 +558,10 @@ if page == "🏠 Dashboard":
 
     # AI
 
-st.markdown('<div class="section">🤖 Today\'s Intelligence</div>', unsafe_allow_html=True)
-    
+    st.markdown(
+        '<div class="section">🤖 Today\'s Intelligence</div>',
+        unsafe_allow_html=True
+    )
 
     left, right = st.columns([1.5, 1])
 
@@ -1842,3 +1845,5 @@ Observe • Diagnose • Recommend • Act • Measure • Improve
 
 </div>
 """, unsafe_allow_html=True)
+```
+
